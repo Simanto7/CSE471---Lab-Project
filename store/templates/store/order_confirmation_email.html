@@ -1,0 +1,46 @@
+<!-- store/templates/store/order_confirmation_email.html -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Order Confirmation</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      h1 {
+        color: #4caf50;
+      }
+      .order-details {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Order Confirmation</h1>
+    <p>Dear {{ customer.name }},</p>
+    <p>
+      Thank you for your order! Your order number is
+      <strong>#2025{{ order.id }}</strong>.
+    </p>
+    <p>
+      The status of your order is:
+      <strong>{{ order.get_status_display }}</strong>
+    </p>
+
+    <div class="order-details">
+      <h2>Order Details</h2>
+      <p>
+        <strong>Order Total:</strong> BDT {{order.get_cart_total|floatformat:2}}
+      </p>
+    </div>
+
+    <p>
+      You can track the status of your order or view details by visiting the
+      following link:
+    </p>
+    <p><a href="{{ order_details_url }}">View Order Details</a></p>
+
+    <p>Thank you for shopping with us!</p>
+  </body>
+</html>

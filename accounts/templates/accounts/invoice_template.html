@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Invoice</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.5;
+      }
+      .invoice-header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .invoice-header h1 {
+        margin: 0;
+      }
+      .invoice-header p {
+        font-size: 16px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+      }
+      table th,
+      table td {
+        padding: 10px;
+        border: 1px solid #ddd;
+      }
+      table th {
+        background-color: #f4f4f4;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="invoice-header">
+      <h1>Invoice for Order #2025{{ order.id }}</h1>
+      <p>Order Date: {{ order.date_order }}</p>
+      {% if shipping_address %}
+      <h3>Shipping Address</h3>
+      <p><strong>Address:</strong> {{ shipping_address.address }}</p>
+      <p><strong>City:</strong> {{ shipping_address.city }}</p>
+      <p><strong>State:</strong> {{ shipping_address.state }}</p>
+      <p><strong>Zipcode:</strong> {{ shipping_address.zipcode }}</p>
+      {% else %}
+      <p>No shipping address provided.</p>
+      {% endif %}
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Price</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in order.orderitem_set.all %}
+        <tr>
+          <td>{{ item.product.name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>BDT {{ item.product.price|floatformat:2 }}</td>
+          <td>BDT {{ item.get_total|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <p>
+      <strong
+        >Total Amount: BDT {{ order.get_cart_total|floatformat:2 }}</strong
+      >
+    </p>
+  </body>
+</html>

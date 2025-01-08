@@ -1,0 +1,498 @@
+{% extends "store/main.html" %} {% load static %} {% block content %}
+
+<div
+  class="jumbotron text-center"
+  style="
+    background-color: #ebeff5;
+
+    padding: 4rem 2rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  "
+>
+  <h1
+    class="jumbotron-heading"
+    style="
+      font-size: 3rem;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    "
+  >
+    Shop the Best Deals Online
+  </h1>
+  <p
+    class="lead"
+    style="
+      font-size: 1.25rem;
+      max-width: 700px;
+      margin: 1rem auto;
+      line-height: 1.6;
+    "
+  >
+    Discover our exclusive range of top-quality products with unbeatable prices.
+    Find your next favorite item today!
+  </p>
+  <a
+    href="#shop"
+    class="btn btn-info btn-lg mt-3"
+    style="
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 30px;
+      font-size: 1.2rem;
+    "
+    >Start Shopping</a
+  >
+</div>
+
+<section class="container mt-5" id="shop">
+  <!-- Display Messages -->
+  {% if messages %} {% for message in messages %}
+  <div class="container-fluid p-0">
+    <div class="alert {{ message.tags }} alert-dismissible" role="alert">
+      <button
+        type="button"
+        class="close"
+        data-dismiss="alert"
+        aria-label="Close"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+      {{ message }}
+    </div>
+  </div>
+  {% endfor %} {% endif %}
+  <!-- Search and Filter Form -->
+  <form
+    method="GET"
+    action="{% url 'store' %}"
+    class="form-inline justify-content-end"
+  >
+    <div class="input-group mb-3 w-50">
+      <input
+        type="text"
+        name="query"
+        class="form-control"
+        placeholder="🔍 Search products..."
+        value="{{ request.GET.query }}"
+      />
+      <select name="category" class="form-select">
+        <option value="">All Categories</option>
+        {% for category in categories %}
+        <option value="{{ category.id }}">{{ category.name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-search"></i> Search
+      </button>
+    </div>
+  </form>
+
+  <div class="card-group mt-2">
+    <div class="row">
+      {% for product in products %}
+      <div class="col-lg-3 col-md-4">
+        <div class="card shadow-sm border-0 rounded product-card">
+          <!-- Product Image with Hover Effect -->
+          <div class="product-image-wrapper">
+            <img
+              class="card-img-top product-img"
+              src="{{ product.productPicURL }}"
+              alt="{{ product.name }}"
+            />
+            <div class="overlay">
+              <button
+                class="btn btn-outline-secondary add-btn update-cart"
+                data-product="{{ product.id }}"
+                data-action="add"
+              >
+                Add to Cart
+              </button>
+            </div>
+          </div>
+
+          <!-- Product Details Section -->
+          <div class="card-body">
+            <h5 class="card-title product-name">
+              <a
+                href="#"
+                data-toggle="modal"
+                data-target="#productModal{{ product.id }}"
+              >
+                {{ product.name }}
+              </a>
+            </h5>
+
+            <!-- Product Rating -->
+            <div class="rating">
+              <span class="text-warning">
+                <span
+                  class="stars"
+                  data-rating="{{ product.average_rating }}"
+                ></span>
+              </span>
+              <span>({{ product.average_rating|floatformat:1 }} / 5)</span>
+            </div>
+
+            <!-- Price Section -->
+            <h4 class="product-price">
+              <strong>BDT {{ product.price|floatformat:2 }}</strong>
+            </h4>
+
+            <!-- Additional Buttons for Authenticated Users -->
+            {% if request.user.is_authenticated %}
+            <a
+              href="{% url 'add_to_wishlist' product.id %}"
+              class="btn btn-outline-success btn-sm mt-2"
+              >Add to Wishlist</a
+            >
+            <a
+              href="{% url 'add_to_comparison' product.id %}"
+              class="btn btn-outline-primary btn-sm mt-2"
+              >Compare</a
+            >
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Bootstrap Modal for Product Details -->
+      <div
+        class="modal fade"
+        id="productModal{{ product.id }}"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="productModalLabel{{ product.id }}"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h5 class="modal-title" id="productModalLabel{{ product.id }}">
+                {{ product.name }}
+              </h5>
+              <button
+                type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <!-- Modal Body -->
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <img
+                    src="{{ product.productPicURL }}"
+                    class="img-fluid"
+                    alt="{{ product.name }}"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <h5>{{ product.description }}</h5>
+                  <p>
+                    <strong
+                      >Price: BDT {{ product.price|floatformat:2 }}</strong
+                    >
+                  </p>
+                </div>
+              </div>
+
+              <!-- Product Reviews Section -->
+              <hr />
+              <h5 class="mb-4">Customer Reviews</h5>
+              {% if product.reviews.all %}
+              <ul class="list-group mb-4">
+                {% for review in product.reviews.all %} {% if review.moderated%}
+                <li class="list-group-item">
+                  <div class="d-flex justify-content-between">
+                    <strong>{{ review.customer.name }}</strong>
+                    <span class="text-muted"
+                      >{{ review.created_at|date:"M d, Y" }}</span
+                    >
+                  </div>
+                  <div class="rating">
+                    <span class="text-warning">
+                      <span
+                        class="stars"
+                        data-rating="{{ review.rating }}"
+                      ></span>
+                    </span>
+                  </div>
+                  <p>{{ review.review_text }}</p>
+                </li>
+                {% else %}
+                <li class="list-group item">
+                  <p class="text-warning">
+                    This review is awaiting moderation.
+                  </p>
+                </li>
+                {% endif %} {% endfor %}
+              </ul>
+              {% else %}
+              <p>No reviews yet. Be the first to review this product!</p>
+              {% endif %}
+
+              <!-- Add Review Form -->
+              {% if request.user.is_authenticated %}
+              <h5 class="mt-4">Add Your Review</h5>
+              <form
+                method="POST"
+                action="{% url 'product_review' product.id %}"
+              >
+                {% csrf_token %}
+                <div class="form-group">
+                  <label for="reviewRating">Rating</label>
+                  <select
+                    name="rating"
+                    id="reviewRating"
+                    class="form-control"
+                    required
+                  >
+                    <option value="1">1 Star</option>
+                    <option value="2">2 Stars</option>
+                    <option value="3">3 Stars</option>
+                    <option value="4">4 Stars</option>
+                    <option value="5">5 Stars</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="reviewComment">Review Comment</label>
+                  <textarea
+                    name="review_text"
+                    id="reviewComment"
+                    class="form-control"
+                    rows="3"
+                    required
+                  ></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary mt-2">
+                  Submit Review
+                </button>
+              </form>
+              {% else %}
+              <p>
+                Please <a href="{% url 'login' %}">log in</a> to add a review.
+              </p>
+              {% endif %}
+            </div>
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-dismiss="modal"
+              >
+                Close
+              </button>
+              <button
+                data-product="{{ product.id }}"
+                data-action="add"
+                class="btn btn-primary add-btn update-cart"
+              >
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% endfor %}
+    </div>
+  </div>
+
+  <section class="accordion mt-5 mb-5" id="faqAccordion">
+    <h2 class="text-center mb-4">Frequently Asked Questions (FAQs)</h2>
+
+    <!-- Question 1 -->
+    <div class="card">
+      <div class="card-header" id="faqHeadingOne">
+        <h2 class="mb-0">
+          <button
+            class="btn btn-link btn-block text-left"
+            type="button"
+            data-toggle="collapse"
+            data-target="#faqCollapseOne"
+            aria-expanded="true"
+            aria-controls="faqCollapseOne"
+          >
+            What is your return policy?
+          </button>
+        </h2>
+      </div>
+      <div
+        id="faqCollapseOne"
+        class="collapse show"
+        aria-labelledby="faqHeadingOne"
+        data-parent="#faqAccordion"
+      >
+        <div class="card-body">
+          We offer a 30-day return policy for unused and undamaged items in
+          their original packaging. Please contact our support team for
+          assistance with returns.
+        </div>
+      </div>
+    </div>
+
+    <!-- Question 2 -->
+    <div class="card">
+      <div class="card-header" id="faqHeadingTwo">
+        <h2 class="mb-0">
+          <button
+            class="btn btn-link btn-block text-left collapsed"
+            type="button"
+            data-toggle="collapse"
+            data-target="#faqCollapseTwo"
+            aria-expanded="false"
+            aria-controls="faqCollapseTwo"
+          >
+            How long does shipping take?
+          </button>
+        </h2>
+      </div>
+      <div
+        id="faqCollapseTwo"
+        class="collapse"
+        aria-labelledby="faqHeadingTwo"
+        data-parent="#faqAccordion"
+      >
+        <div class="card-body">
+          Shipping usually takes 5-7 business days for standard delivery.
+          Expedited shipping options are also available at checkout.
+        </div>
+      </div>
+    </div>
+
+    <!-- Question 3 -->
+    <div class="card">
+      <div class="card-header" id="faqHeadingThree">
+        <h2 class="mb-0">
+          <button
+            class="btn btn-link btn-block text-left collapsed"
+            type="button"
+            data-toggle="collapse"
+            data-target="#faqCollapseThree"
+            aria-expanded="false"
+            aria-controls="faqCollapseThree"
+          >
+            How can I track my order?
+          </button>
+        </h2>
+      </div>
+      <div
+        id="faqCollapseThree"
+        class="collapse"
+        aria-labelledby="faqHeadingThree"
+        data-parent="#faqAccordion"
+      >
+        <div class="card-body">
+          Once your order is shipped, you will receive a tracking number via
+          email. You can use this number to track your order on our website or
+          the carrier's website.
+        </div>
+      </div>
+    </div>
+
+    <!-- Question 4 -->
+    <div class="card">
+      <div class="card-header" id="faqHeadingFour">
+        <h2 class="mb-0">
+          <button
+            class="btn btn-link btn-block text-left collapsed"
+            type="button"
+            data-toggle="collapse"
+            data-target="#faqCollapseFour"
+            aria-expanded="false"
+            aria-controls="faqCollapseFour"
+          >
+            What payment methods do you accept?
+          </button>
+        </h2>
+      </div>
+      <div
+        id="faqCollapseFour"
+        class="collapse"
+        aria-labelledby="faqHeadingFour"
+        data-parent="#faqAccordion"
+      >
+        <div class="card-body">
+          We accept all major credit cards, debit cards, PayPal, and digital
+          wallets like Apple Pay and Google Pay.
+        </div>
+      </div>
+    </div>
+  </section>
+</section>
+<!-- JavaScript for dynamic star rating display -->
+<script>
+  document.querySelectorAll(".stars").forEach(function (starElement) {
+    const rating = parseInt(starElement.getAttribute("data-rating"));
+    let starsHtml = "";
+    for (let i = 1; i <= 5; i++) {
+      starsHtml +=
+        i <= rating
+          ? '<i class="fas fa-star"></i>'
+          : '<i class="far fa-star"></i>';
+    }
+    starElement.innerHTML = starsHtml;
+  });
+</script>
+
+<style>
+  .product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .product-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .product-image-wrapper {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .product-img {
+    transition: transform 0.5s ease;
+  }
+
+  .product-image-wrapper:hover .product-img {
+    transform: scale(1.1);
+  }
+
+  .overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s ease;
+  }
+
+  .product-image-wrapper:hover .overlay {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .product-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .product-price {
+    font-size: 1.5rem;
+    color: #e74c3c;
+  }
+
+  .rating .stars {
+    font-size: 1rem;
+  }
+</style>
+
+{% endblock content %}

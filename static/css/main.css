@@ -1,0 +1,100 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  background-color: #ebeff5;
+}
+
+a {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+A:hover {
+  text-decoration: none;
+}
+
+#total-orders {
+  background-color: #4cb4c7;
+}
+
+#orders-delivered {
+  background-color: #7abecc;
+}
+
+#orders-pending {
+  background-color: #7cd1c0;
+}
+
+.whatsapp-support {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* background-color: #25d366; */
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  text-decoration: none;
+}
+
+.whatsapp-support img {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+}
+
+#faqAccordion .btn-link {
+  color: #007bff;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+#faqAccordion .btn-link:hover {
+  text-decoration: underline;
+}
+
+#faqAccordion .card-header {
+  background-color: #f8f9fa;
+}
+
+#faqAccordion .card-body {
+  font-size: 0.95rem;
+  color: #333;
+}
+
+footer {
+  color: #fff;
+}
+
+footer a {
+  text-decoration: none;
+  color: #ffc107;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+footer .bg-dark {
+  background-color: #343a40 !important;
+}
+
+footer .bg-secondary {
+  background-color: #6c757d !important;
+}
+
+footer .me-3 {
+  margin-right: 1rem !important;
+}
+
+/* search */

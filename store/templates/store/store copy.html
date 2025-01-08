@@ -1,0 +1,395 @@
+{% extends "store/main.html" %} {% load static %} {% block content %}
+
+<!-- Display Messages -->
+{% if messages %} {% for message in messages %}
+<div class="container-fluid p-0">
+  <div class="alert {{ message.tags }} alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    {{ message }}
+  </div>
+</div>
+{% endfor %} {% endif %}
+
+<div class="jumbotron text-center">
+  <div class="">
+    <h1 class="jumbotron-heading">Welcome to Our Store</h1>
+    <p class="lead text-muted">
+      Browse our collection of high-quality products and find the perfect gift
+      for yourself or your loved ones.
+    </p>
+  </div>
+</div>
+
+<!-- Search and Filter Form -->
+
+<form
+  method="GET"
+  action="{% url 'store' %}"
+  class="form-inline justify-content-end"
+>
+  <div class="input-group mb-3 w-50">
+    <!-- Search Input -->
+    <input
+      type="text"
+      name="query"
+      class="form-control"
+      placeholder="🔍 Search products..."
+      value="{{ request.GET.query }}"
+    />
+    <!-- Category Dropdown -->
+    <select name="category" class="form-select">
+      <option value="">All Categories</option>
+      {% for category in categories %}
+      <option value="{{ category.id }}">{{ category.name }}</option>
+      {% endfor %}
+    </select>
+    <!-- Search Button -->
+    <button type="submit" class="btn btn-primary">
+      <i class="fas fa-search"></i> Search
+    </button>
+  </div>
+</form>
+
+<div class="card-group mt-2">
+  <div class="row">
+    {% for product in products %}
+    <div class="col-lg-3 col-md-4">
+      <div class="card">
+        <!-- Product Image -->
+        <img
+          class="card-img-top"
+          src="{{ product.productPicURL }}"
+          alt="{{ product.name }}"
+        />
+
+        <!-- Product Details Section -->
+        <div class="card-body">
+          <!-- Product Name with Modal Trigger -->
+          <h5 class="card-title">
+            <a
+              href="#"
+              data-toggle="modal"
+              data-target="#productModal{{ product.id }}"
+            >
+              {{ product.name }}
+            </a>
+          </h5>
+
+          <!-- Display Average Rating -->
+          <div class="rating">
+            <span class="text-warning">
+              <span
+                class="stars"
+                data-rating="{{  product.average_rating }}"
+              ></span>
+            </span>
+            <span>({{ product.average_rating|floatformat:1 }} / 5)</span>
+          </div>
+          <hr />
+
+          <!-- Add to Cart Button -->
+          <button
+            data-product="{{ product.id }}"
+            data-action="add"
+            class="btn btn-outline-secondary add-btn update-cart"
+          >
+            Add to Cart
+          </button>
+
+          <!-- Wishlist Button for Authenticated Users -->
+          {% if request.user.is_authenticated %}
+          <a
+            href="{% url 'add_to_wishlist' product.id %}"
+            class="btn btn-outline-success mt-2"
+          >
+            Add to Wishlist
+          </a>
+
+          <a
+            href="{% url 'add_to_comparison' product.id %}"
+            class="btn btn-outline-primary mt-2"
+          >
+            Compare
+          </a>
+
+          {% endif %}
+
+          <!-- Price Section -->
+          <h4 style="display: inline-block; float: right">
+            <strong>${{ product.price|floatformat:2 }}</strong>
+          </h4>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap Modal for Product Details -->
+    <div
+      class="modal fade"
+      id="productModal{{ product.id }}"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="productModalLabel{{ product.id }}"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <!-- Modal Header -->
+          <div class="modal-header">
+            <h5 class="modal-title" id="productModalLabel{{ product.id }}">
+              {{ product.name }}
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+
+          <!-- Modal Body -->
+          <div class="modal-body">
+            <div class="row">
+              <!-- Product Image -->
+              <div class="col-md-6">
+                <img
+                  src="{{ product.productPicURL }}"
+                  class="img-fluid"
+                  alt="{{ product.name }}"
+                />
+              </div>
+              <!-- Product Details -->
+              <div class="col-md-6">
+                <h5>{{ product.description }}</h5>
+                <p>
+                  <strong>Price: ${{ product.price|floatformat:2 }}</strong>
+                </p>
+              </div>
+            </div>
+
+            <!-- Display Reviews -->
+            <hr />
+            <h4>Customer Reviews:</h4>
+            {% for review in product.reviews.all %} {% if review.moderated %}
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <div class="review">
+                  <p>
+                    <strong>{{ review.customer.name }}</strong>
+                    <!-- Star Rating -->
+                    <span class="text-warning">
+                      <span
+                        class="stars"
+                        data-rating="{{ review.rating }}"
+                      ></span>
+                    </span>
+                  </p>
+                  <p>{{ review.review_text }}</p>
+                  <small>Posted on {{ review.created_at }}</small>
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <p class="text-warning">This review is awaiting moderation.</p>
+              </div>
+            </div>
+            {% endif %} {% empty %}
+            <p>No reviews yet.</p>
+            {% endfor %}
+
+            <!-- Review Form -->
+            <hr />
+            <h4>Add Your Review:</h4>
+            <form method="POST" action="{% url 'product_review' product.id %}">
+              {% csrf_token %}
+
+              <div class="form-group">
+                <label for="rating">Rating:</label>
+                <!-- Rating dropdown or select -->
+                <select name="rating" id="ratingInput" class="form-control">
+                  <option value="1">1 Star</option>
+                  <option value="2">2 Stars</option>
+                  <option value="3">3 Stars</option>
+                  <option value="4">4 Stars</option>
+                  <option value="5">5 Stars</option>
+                </select>
+              </div>
+
+              <div class="form-group">{{ form.review_text }}</div>
+
+              <button type="submit" class="btn btn-primary">
+                Submit Review
+              </button>
+            </form>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+            <button
+              data-product="{{ product.id }}"
+              data-action="add"
+              class="btn btn-primary update-cart"
+            >
+              Add to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% endfor %}
+  </div>
+</div>
+
+{% comment %} faq content {% endcomment %}
+
+<section class="accordion mt-5 mb-5" id="faqAccordion">
+  <h2 class="text-center mb-4">Frequently Asked Questions (FAQs)</h2>
+
+  <!-- Question 1 -->
+  <div class="card">
+    <div class="card-header" id="faqHeadingOne">
+      <h2 class="mb-0">
+        <button
+          class="btn btn-link btn-block text-left"
+          type="button"
+          data-toggle="collapse"
+          data-target="#faqCollapseOne"
+          aria-expanded="true"
+          aria-controls="faqCollapseOne"
+        >
+          What is your return policy?
+        </button>
+      </h2>
+    </div>
+    <div
+      id="faqCollapseOne"
+      class="collapse show"
+      aria-labelledby="faqHeadingOne"
+      data-parent="#faqAccordion"
+    >
+      <div class="card-body">
+        We offer a 30-day return policy for unused and undamaged items in their
+        original packaging. Please contact our support team for assistance with
+        returns.
+      </div>
+    </div>
+  </div>
+
+  <!-- Question 2 -->
+  <div class="card">
+    <div class="card-header" id="faqHeadingTwo">
+      <h2 class="mb-0">
+        <button
+          class="btn btn-link btn-block text-left collapsed"
+          type="button"
+          data-toggle="collapse"
+          data-target="#faqCollapseTwo"
+          aria-expanded="false"
+          aria-controls="faqCollapseTwo"
+        >
+          How long does shipping take?
+        </button>
+      </h2>
+    </div>
+    <div
+      id="faqCollapseTwo"
+      class="collapse"
+      aria-labelledby="faqHeadingTwo"
+      data-parent="#faqAccordion"
+    >
+      <div class="card-body">
+        Shipping usually takes 5-7 business days for standard delivery.
+        Expedited shipping options are also available at checkout.
+      </div>
+    </div>
+  </div>
+
+  <!-- Question 3 -->
+  <div class="card">
+    <div class="card-header" id="faqHeadingThree">
+      <h2 class="mb-0">
+        <button
+          class="btn btn-link btn-block text-left collapsed"
+          type="button"
+          data-toggle="collapse"
+          data-target="#faqCollapseThree"
+          aria-expanded="false"
+          aria-controls="faqCollapseThree"
+        >
+          How can I track my order?
+        </button>
+      </h2>
+    </div>
+    <div
+      id="faqCollapseThree"
+      class="collapse"
+      aria-labelledby="faqHeadingThree"
+      data-parent="#faqAccordion"
+    >
+      <div class="card-body">
+        Once your order is shipped, you will receive a tracking number via
+        email. You can use this number to track your order on our website or the
+        carrier's website.
+      </div>
+    </div>
+  </div>
+
+  <!-- Question 4 -->
+  <div class="card">
+    <div class="card-header" id="faqHeadingFour">
+      <h2 class="mb-0">
+        <button
+          class="btn btn-link btn-block text-left collapsed"
+          type="button"
+          data-toggle="collapse"
+          data-target="#faqCollapseFour"
+          aria-expanded="false"
+          aria-controls="faqCollapseFour"
+        >
+          What payment methods do you accept?
+        </button>
+      </h2>
+    </div>
+    <div
+      id="faqCollapseFour"
+      class="collapse"
+      aria-labelledby="faqHeadingFour"
+      data-parent="#faqAccordion"
+    >
+      <div class="card-body">
+        We accept all major credit cards, debit cards, PayPal, and digital
+        wallets like Apple Pay and Google Pay.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- JavaScript for dynamic star rating display -->
+<script>
+  document.querySelectorAll(".stars").forEach(function (starElement) {
+    const rating = parseInt(starElement.getAttribute("data-rating"));
+    let starsHtml = "";
+    for (let i = 1; i <= 5; i++) {
+      if (i <= rating) {
+        starsHtml += '<i class="fas fa-star"></i>';
+      } else {
+        starsHtml += '<i class="far fa-star"></i>';
+      }
+    }
+    starElement.innerHTML = starsHtml;
+  });
+</script>
+{% endblock content %}

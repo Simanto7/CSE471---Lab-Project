@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>Refund Request</h1>
+    <p>Dear Admin,</p>
+    <p>
+      A refund request has been made for Order #{{ order.id }} by the customer
+      {{ user.username }}.
+    </p>
+    <p>Order Details:</p>
+    <ul>
+      <li>Order ID: #2025{{ order.id }}</li>
+      <li>Customer Name: {{ order.customer.username }}</li>
+      <li>Order Total: BDT {{ order.total_amount }}</li>
+      <li>Refund Requested On: {{ order.updated_at }}</li>
+    </ul>
+    <p>Please take the necessary action.</p>
+    <p>Best regards,</p>
+    <p>Your Store Team</p>
+  </body>
+</html>

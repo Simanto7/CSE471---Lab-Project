@@ -1,0 +1,11 @@
+pillow
+django
+pymysql
+django-filter
+django-recaptcha
+pandas
+django-resized
+django-admin-interface
+django-colorfield
+xhtml2pdf
+sslcommerz-lib

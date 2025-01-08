@@ -1,0 +1,75 @@
+{% extends "store/main.html" %} {% load static %} {% block content %}
+<div class="container">
+  <h2 class="mt-5">Product Comparison</h2>
+
+  {% if compared_products %}
+  <table class="table table-bordered mt-3">
+    <thead>
+      <tr class="bg-dark text-white">
+        <th>Feature</th>
+        {% for product in compared_products %}
+        <th>
+          <a href="" class="text-warning"> {{ product.name }} </a>
+          <a
+            href="{% url 'remove_from_comparison' product.id %}"
+            class="text-danger ml-2"
+          >
+            🗑️
+          </a>
+        </th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Category</td>
+        {% for product in compared_products %}
+        <td>{{ product.category }}</td>
+        {% endfor %}
+      </tr>
+      <tr>
+        <td>Price</td>
+        {% for product in compared_products %}
+        <td>BDT {{ product.price }}</td>
+        {% endfor %}
+      </tr>
+      <tr>
+        <td>Average Rating</td>
+        {% for product in compared_products %}
+        <td>
+          <div class="rating">
+            <span class="text-warning">
+              <span
+                class="stars"
+                data-rating="{{ product.average_rating }}"
+              ></span>
+            </span>
+            <span>({{ product.average_rating|floatformat:1 }} / 5)</span>
+          </div>
+        </td>
+        {% endfor %}
+      </tr>
+    </tbody>
+  </table>
+  {% else %}
+  <p>No products selected for comparison yet.</p>
+  {% endif %}
+
+  <a href="{% url 'store' %}" class="btn btn-secondary mt-3">Back to Store</a>
+</div>
+<!-- JavaScript for dynamic star rating display -->
+<script>
+  document.querySelectorAll(".stars").forEach(function (starElement) {
+    const rating = parseInt(starElement.getAttribute("data-rating"));
+    let starsHtml = "";
+    for (let i = 1; i <= 5; i++) {
+      starsHtml +=
+        i <= rating
+          ? '<i class="fas fa-star"></i>'
+          : '<i class="far fa-star"></i>';
+    }
+    starElement.innerHTML = starsHtml;
+  });
+</script>
+
+{% endblock content %}

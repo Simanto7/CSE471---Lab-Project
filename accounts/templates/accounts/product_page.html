@@ -1,0 +1,85 @@
+{% extends "accounts/main.html" %} {% block content %}
+
+<!-- Form to add a new product -->
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-6 offset-md-3">
+      <div class="card">
+        <div class="card-header">
+          <h3>
+            {% if product %}Edit Product{% else %}Add a New Product{% endif %}
+          </h3>
+        </div>
+        <div class="card-body">
+          <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %} {{ form.as_p }}
+            <button type="submit" class="btn btn-primary mt-2">
+              {% if product %}Update Product{% else %}Add Product{% endif %}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- List of all products in a table -->
+  <div class="mt-4">
+    <h2>All Products</h2>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Image</th>
+          <th scope="col">Product Name</th>
+          <th scope="col">Category</th>
+          <th scope="col">Price</th>
+
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+        <tr>
+          <th scope="row">{{ forloop.counter }}</th>
+          <td>
+            {% if product.productPic %}
+            <img
+              src="{{ product.productPicURL }}"
+              alt="{{ product.name }}"
+              style="width: 50px; height: 50px; object-fit: cover"
+            />
+            {% else %}
+            <span>No Image</span>
+            {% endif %}
+          </td>
+          <td>{{ product.name }}</td>
+          <td>
+            {% if product.category %} {{ product.category.name }} {%else %}
+            <span>No Category</span>
+            {% endif %}
+          </td>
+          <td>BDT {{ product.price }}</td>
+
+          <td>
+            <!-- Add action buttons, for example, to edit or delete the product -->
+
+            <a
+              href="{% url 'edit_product' product.id %}"
+              class="btn btn-info btn-sm"
+              >Edit</a
+            >
+
+            <a
+              href="{% url 'delete_product' product.id %}"
+              class="btn btn-danger btn-sm"
+              >Delete</a
+            >
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

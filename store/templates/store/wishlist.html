@@ -1,0 +1,105 @@
+{% extends "store/main.html" %} {% block content %}
+
+<div class="container">
+  <h2 class="mt-4">{{ user.username }}'s Wishlist</h2>
+
+  {% if wishlistItems %}
+  <table class="table table-bordered mt-3">
+    <thead class="thead-dark">
+      <tr>
+        <th scope="col">Image</th>
+        <th scope="col">Product Name</th>
+        <th scope="col">Unit Price</th>
+        <th scope="col">Add to Cart</th>
+        <th scope="col">Remove</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in wishlistItems %}
+      <tr>
+        <td>
+          <img
+            src="{{ item.product.productPicURL }}"
+            alt="{{ item.product.name }}"
+            style="width: 80px; height: 80px; object-fit: cover"
+          />
+        </td>
+        <td>{{ item.product.name }}</td>
+        <td>BDT {{ item.product.price|floatformat:2 }}</td>
+        <td>
+          <button
+            data-product="{{ item.product.id }}"
+            data-action="add"
+            class="btn btn-outline-secondary add-btn update-cart"
+          >
+            Add to Cart
+          </button>
+        </td>
+        <td>
+          <a
+            href="{% url 'remove_from_wishlist' item.product.id %}"
+            class="btn btn-danger btn-sm"
+            >Remove</a
+          >
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>{{ user.username }}'s wishlist is empty!</p>
+  {% endif %}
+
+  <!-- Share Link Section -->
+  <p>Share this wishlist with others using this link:</p>
+  <input
+    id="wishlistUrl"
+    type="text"
+    class="form-control"
+    value="{{ request.build_absolute_uri }}"
+    readonly
+    onclick="copyToClipboard()"
+  />
+
+  <p id="copyMessage" style="display: none; color: green">
+    Link copied to clipboard!
+  </p>
+
+  <br />
+  <!-- Share buttons -->
+  <a
+    href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}"
+    target="_blank"
+    class="btn btn-primary mt-2"
+    >Share on Facebook</a
+  >
+  <a
+    href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}"
+    target="_blank"
+    class="btn btn-info mt-2"
+    >Share on Twitter</a
+  >
+</div>
+<script>
+  function copyToClipboard() {
+    var copyText = document.getElementById("wishlistUrl");
+
+    // Select the text field
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); // For mobile devices
+
+    // Copy the text inside the text field
+    document.execCommand("copy");
+
+    // Show confirmation message
+    var message = document.getElementById("copyMessage");
+    message.style.display = "inline"; // Show the copied message
+
+    // Hide the message after 2 seconds
+    setTimeout(function () {
+      message.style.display = "none";
+    }, 2000);
+  }
+</script>
+
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "accounts/main.html" %} {% block content %}
+
+<div class="container mt-5">
+  <h1 class="text-center mb-4">
+    Order Details (Order ID: #2025{{ order.id }})
+  </h1>
+
+  <div class="row">
+    <!-- Order Information -->
+    <div class="col-md-6">
+      {% if order.refund_requested %}
+      <h3>
+        Refund Requested:
+        <span class="badge badge-danger"
+          >{{order.get_refund_status_display}}</span
+        >
+      </h3>
+      {% endif %}
+
+      <h3>
+        Order Status:
+        <span class="badge badge-info">{{ order.get_status_display }}</span>
+      </h3>
+      <p><strong>Order Date: </strong> {{ order.date_order }}</p>
+      <p><strong>Transaction ID: </strong> {{ order.transaction_id }}</p>
+      <p>
+        <strong>Total Amount: </strong>
+        BDT {{order.get_cart_total_before|floatformat:2 }}
+      </p>
+      <p><strong>Promo Code: </strong>{{ order.promo_code.code }}</p>
+      <p>
+        <strong class="text-success">Total Amount After Discount: </strong>
+        BDT {{order.get_cart_total|floatformat:2 }}
+      </p>
+      <p><strong>Items Count: </strong> {{ order.get_cart_total_items }}</p>
+
+      <!-- Display Shipping Address -->
+      {% if shipping_address %}
+      <h3>Shipping Address</h3>
+      <p><strong>Name:</strong> {{ order.customer.name }}</p>
+      <p><strong>Email:</strong> {{ order.customer.email }}</p>
+      <p><strong>Phone:</strong> {{ order.customer.phone }}</p>
+      <p><strong>Address:</strong> {{ shipping_address.address }}</p>
+      <p><strong>City:</strong> {{ shipping_address.city }}</p>
+      <p><strong>State:</strong> {{ shipping_address.state }}</p>
+      <p><strong>Zipcode:</strong> {{ shipping_address.zipcode }}</p>
+      {% else %}
+      <p>No shipping address provided.</p>
+      {% endif %}
+    </div>
+
+    <!-- Invoice and Reorder Actions -->
+    <div class="col-md-6">
+      <a href="{% url 'download_invoice' order.id %}" class="btn btn-primary"
+        >Download Invoice</a
+      >
+      <a href="{% url 'reorder' order.id %}" class="btn btn-warning">Reorder</a>
+    </div>
+  </div>
+
+  <h3 class="mt-4">Ordered Items:</h3>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Name</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in order_items %}
+      <tr>
+        <td>
+          <img
+            class="row-image img-fluid"
+            style="max-width: 100px"
+            src="{{item.product.productPicURL}}"
+          />
+        </td>
+        <td>{{ item.product.name }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>BDT {{ item.product.price|floatformat:2 }}</td>
+        <td>BDT {{ item.get_total|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if not order.refund_requested %}
+  <!-- Invoice and Reorder Actions -->
+  <div class="col-md-6">
+    <a href="{% url 'refund_request' order.id %}" class="btn btn-danger"
+      >Request For Refund / Return</a
+    >
+  </div>
+  {% endif %}
+</div>
+
+{% endblock content %}

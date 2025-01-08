@@ -1,0 +1,246 @@
+{% extends "store/main.html" %} {% load static %} {% block content %}
+
+<div class="container">
+  <!-- Display Messages -->
+  {% if messages %} {% for message in messages %}
+  <div class="container-fluid p-0">
+    <div class="alert {{ message.tags }} alert-dismissible" role="alert">
+      <button
+        type="button"
+        class="close"
+        data-dismiss="alert"
+        aria-label="Close"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+      {{ message }}
+    </div>
+  </div>
+  {% endfor %} {% endif %}
+  <div class="row mt-5">
+    <div class="col-lg-6">
+      <div class="box-element">
+        <a class="btn btn-outline-dark" href="{% url 'cart' %}"
+          >&#x2190; Back to Cart</a
+        >
+        <hr />
+        <h3>Order Summary</h3>
+        <hr />
+        {% for item in items %}
+        <div class="cart-row">
+          <div style="flex: 2">
+            <img class="row-image" src="{{item.product.productPicURL}}" />
+          </div>
+          <div style="flex: 2">
+            <p>{{item.product.name}}</p>
+          </div>
+          <div style="flex: 1">
+            <p>BDT {{item.product.price|floatformat:2}}</p>
+          </div>
+          <div style="flex: 1">
+            <p>x{{item.quantity}}</p>
+          </div>
+        </div>
+        {% endfor %}
+
+        <h5>Items: {{order.get_cart_total_items}}</h5>
+        <h5>Total: BDT {{order.get_cart_total_before}}</h5>
+
+        {% if order.promo_code %}
+        <h5>
+          Promo Code:
+          <span class="text-warning">{{order.promo_code.code}}</span>
+        </h5>
+        <h5>Total After Discount: BDT {{order.get_cart_total}}</h5>
+        {% endif %}
+      </div>
+
+      <!-- Separate Promo Code Form -->
+      <form method="POST" action="{% url 'apply_promo_code' %}">
+        {% csrf_token %}
+        <div class="form-field">
+          <label for="promo_code">Promo Code:</label>
+          <input
+            class="form-control"
+            type="text"
+            name="promo_code"
+            placeholder="Enter Promo Code..."
+          />
+        </div>
+        <input class="btn btn-info" type="submit" value="Apply Promo Code" />
+      </form>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="box-element" id="form-wrapper">
+        <form id="form">
+          {% csrf_token %}
+          <div id="user-info">
+            <div class="form-field">
+              <input
+                required
+                class="form-control"
+                type="text"
+                name="name"
+                placeholder="Name.."
+              />
+            </div>
+            <div class="form-field">
+              <input
+                required
+                class="form-control"
+                type="email"
+                name="email"
+                placeholder="Email.."
+              />
+            </div>
+          </div>
+
+          <div id="shipping-info">
+            <hr />
+            <p>Shipping Information:</p>
+            <hr />
+            <div class="form-field">
+              <input
+                class="form-control"
+                type="text"
+                name="address"
+                placeholder="Address.."
+              />
+            </div>
+            <div class="form-field">
+              <input
+                class="form-control"
+                type="text"
+                name="city"
+                placeholder="City.."
+              />
+            </div>
+            <div class="form-field">
+              <input
+                class="form-control"
+                type="text"
+                name="state"
+                placeholder="State.."
+              />
+            </div>
+            <div class="form-field">
+              <input
+                class="form-control"
+                type="text"
+                name="zipcode"
+                placeholder="Zip code.."
+              />
+            </div>
+          </div>
+          <hr />
+          <input
+            id="form-button"
+            class="btn btn-success btn-block"
+            type="submit"
+            value="Continue"
+          />
+        </form>
+      </div>
+      <br />
+      <div class="box-element hidden" id="payment-info">
+        <p>
+          <a
+            target="_blank"
+            href="https://www.sslcommerz.com/"
+            title="SSLCommerz"
+            alt="SSLCommerz"
+            ><img
+              style="width: 100%; height: auto; img-fluid"
+              src="https://securepay.sslcommerz.com/public/image/SSLCommerz-Pay-With-logo-All-Size-05.png"
+          /></a>
+        </p>
+        {% comment %} <small>Paypal Options</small> {% endcomment %}
+        <button class="btn btn-success btn-block" id="make-payment">
+          Make Payment with SSLcommerce
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  var shipping = "{{order.shipping}}";
+  var total = "{{order.get_cart_total}}";
+
+  if (shipping == "False") {
+    document.getElementById("shipping-info").innerHTML = "";
+  }
+  if (user != "AnonymousUser") {
+    document.getElementById("user-info").innerHTML = "";
+  }
+  if (shipping == "False" && user != "AnonymousUser") {
+    document.getElementById("form-wrapper").classList.add("hidden");
+    document.getElementById("payment-info").classList.remove("hidden");
+  }
+  // continue button
+  var form = document.getElementById("form");
+  csrf_token = form.getElementsByTagName("input")[0].value;
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    document.getElementById("form-button").classList.add("hidden");
+    document.getElementById("payment-info").classList.remove("hidden");
+  });
+
+  // payment
+  document
+    .getElementById("make-payment")
+    .addEventListener("click", function (e) {
+      submitFormData();
+    });
+
+  function submitFormData() {
+    var promo_code = document.querySelector("input[name='promo_code']").value;
+
+    var userFormData = {
+      name: null,
+      email: null,
+      total: total,
+    };
+    var shippingFormData = {
+      address: null,
+      city: null,
+      state: null,
+      zipcode: null,
+    };
+    if (shipping != "False") {
+      shippingFormData.address = form.address.value;
+      shippingFormData.city = form.city.value;
+      shippingFormData.state = form.state.value;
+      shippingFormData.zipcode = form.zipcode.value;
+    }
+    if (user == "AnonymousUser") {
+      userFormData.name = form.name.value;
+      userFormData.email = form.email.value;
+    }
+
+    // fetch data
+    var url = "/processOrder/";
+    fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrf_token,
+      },
+      body: JSON.stringify({
+        userFormData: userFormData,
+        shippingFormData: shippingFormData,
+      }),
+    })
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        if (data.payment_url) {
+          window.location.href = data.payment_url;
+        } else {
+          alert("Payment failed.");
+        }
+      });
+  }
+</script>
+{% endblock content %}
